@@ -1,0 +1,159 @@
+/*
+-------------------------------------------------------------------------------------------------------------------------------
+Programme : Ajouts un vnet Azure
+Type : JSON
+But : Ce programme permet de créer  un ou plusieur vnet  à adapter selon vos besoin 
+- Le programme utilise le schéma de modèle de déploiement Azure Resource Manager (ARM) pour créer les ressources
+Nom : vnet.json
+Version : 1.0
+Auteur : Taibou Judith
+Date : 14/03/2025
+
+
+prérequis :
+- Un abonnement Azure valide
+- Un groupe de ressources Azure valide
+- Remplier les paramètres de configuration selon les besoins
+- Le programme utilise le schéma de modèle de déploiement Azure Resource Manager (ARM) pour créer les ressources
+---------------------------------------------------------------------------------------------------------------------------------
+*/
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+       "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]"
+        },
+         "VnetName0": {
+            "type": "string",
+            "defaultValue": "vnet-applications-poc-fce-1",
+            "metadata": {
+                "description": "The Virtual Network Application"
+            }    
+        },
+         "VnetName1": {
+            "type": "string",
+            "defaultValue": "vnet-hub-poc-fce-1", 
+            "metadata": {
+                "description": "The Virtual Network Hub"
+            }    
+        },
+        "VnetName2": {
+           "type": "string",
+            "defaultValue": "vnet-onpremise-poc-fce-1", 
+            "metadata": {
+                "description": "The Virtual Network On-Premise"
+            } 
+        },
+        "VnetName3": {
+           "type": "string",
+            "defaultValue": "vnet-internet-poc-fce-1", 
+            "metadata": {
+                "description": "The Virtual Network On-Premise"
+            } 
+        },
+        "VnetAddressPrefix0": {
+            "type": "string",
+            "defaultValue": "10.0.0.0/16",
+            "metadata": {
+                "description": "Address prefix for the Virtual Network Application"
+            }
+        },
+        "VnetAddressPrefix1": {
+            "type": "string",
+            "defaultValue":  "10.1.0.0/16",
+            "metadata": {
+                "description": "Address prefix for the Virtual Network hub"
+            }
+        },
+         "VnetAddressPrefix2": {
+            "type": "string",
+            "defaultValue":  "10.2.0.0/16",
+            "metadata": {
+                "description": "Address prefix for the Virtual Network on-premise"
+            }
+        },
+         "VnetAddressPrefix3": {
+            "type": "string",
+            "defaultValue":  "10.3.0.0/16",
+            "metadata": {
+                "description": "Address prefix for the Virtual Network Internet"
+            }
+        }
+    },
+    
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[parameters('VnetName0')]",
+            "location": "[parameters('location')]",
+            "apiVersion": "2015-06-15",
+            "dependsOn": [],
+            "tags": {
+                "displayName": "Vnet-Application"
+            },
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('VnetAddressPrefix0')]"
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[parameters('VnetName1')]",
+            "location": "[parameters('location')]",
+            "apiVersion": "2015-06-15",
+            "dependsOn": [],
+            "tags": {
+                "displayName": "Vnet-Hub"
+            },
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('VnetAddressPrefix1')]"
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[parameters('VnetName2')]",
+            "location": "[parameters('location')]",
+            "apiVersion": "2015-06-15",
+            "dependsOn": [],
+            "tags": {
+                "displayName": "Vnet-OnPremise"
+            },
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('VnetAddressPrefix2')]"
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[parameters('VnetName3')]",
+            "location": "[parameters('location')]",
+            "apiVersion": "2015-06-15",
+            "dependsOn": [],
+            "tags": {
+                "displayName": "Vnet-Internet"
+            },
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('VnetAddressPrefix3')]"
+                    ]
+                }
+            }
+        }
+       
+    ]
+}
+
+    

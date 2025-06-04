@@ -1,0 +1,251 @@
+
+/*
+-------------------------------------------------------------------------------------------------------------------------------
+Programme : Ajouts un vnet applicative qui sera à configurer selon le besoin 
+Type : JSON
+But : Ce programme permet de créer un vnet avec deux subnet associer 
+Nom : 
+Version : 1.0
+Auteur : Taibou Judith
+Date : 20/03/2025
+
+prérequis :
+- Un abonnement Azure valide
+- Un groupe de ressources Azure valide
+- @ ip reseaux  "10.0.0.0/16"
+- elle contient trois sous reseaux   "10.0.1.0/24" ,  "10.0.2.0/24" "10.0.3.0/24" 
+- deux ngs associer une pour le front end et une pour le backend 
+- Remplier les paramètres de configuration selon les besoins
+
+Attention : Ceci est une simulation de conectivité reseaux dans Azure uniquement
+          
+---------------------------------------------------------------------------------------------------------------------------------
+*/
+
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vnetappName": {
+            "defaultValue": "vnet-applications-poc-fce-1",
+            "type": "String"
+        },
+       "nsgname": {
+            "defaultValue": "nsg_front",
+            "type": "String"
+        },
+         "nsgname1": {
+            "defaultValue": "nsg_back",
+            "type": "String"
+        }
+
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2024-05-01",
+            "name": "[parameters('vnetappName')]",
+            "location": "francecentral",
+            "tags": {
+                "displayName": "Vnet-Application"
+            },
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "10.0.0.0/16"
+                    ]
+                },
+                "privateEndpointVNetPolicies": "Disabled",
+                "subnets": [
+                    {
+                        "name": "subnetfront-app-poc-fce-1",
+                        "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetappName'), 'subnetfront-app-poc-fce-1')]",
+                        "properties": {
+                            "addressPrefixes": [
+                                "10.0.1.0/24"
+                            ],
+                            "delegations": [],
+                            "privateEndpointNetworkPolicies": "Disabled",
+                            "privateLinkServiceNetworkPolicies": "Enabled"
+                        },
+                        "type": "Microsoft.Network/virtualNetworks/subnets"
+                    },
+                    {
+                        "name": "subnetbackend-app-poc-fce-1",
+                        "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetappName'), 'subnetbackend-app-poc-fce-1')]",
+                        "properties": {
+                            "addressPrefixes": [
+                                "10.0.2.0/24"
+                            ],
+                            "delegations": [],
+                            "privateEndpointNetworkPolicies": "Disabled",
+                            "privateLinkServiceNetworkPolicies": "Enabled"
+                        },
+                        "type": "Microsoft.Network/virtualNetworks/subnets"
+                    },
+                    {
+                        "name": "subnetadmin-app-poc-fce-1",
+                        "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetappName'), 'subnetadmin-app-poc-fce-1')]",
+                        "properties": {
+                            "addressPrefixes": [
+                                "10.0.3.0/24"
+                            ],
+                            "delegations": [],
+                            "privateEndpointNetworkPolicies": "Disabled",
+                            "privateLinkServiceNetworkPolicies": "Enabled"
+                        },
+                        "type": "Microsoft.Network/virtualNetworks/subnets"
+                    }
+
+                ],
+                "virtualNetworkPeerings": [],
+                "enableDdosProtection": false
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2024-05-01",
+            "name": "[concat(parameters('vnetappName'), '/subnetbackend-app-poc-fce-1')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetappName'))]"
+            ],
+            "properties": {
+                "addressPrefixes": [
+                    "10.0.2.0/24"
+                ],
+                "delegations": [],
+                "privateEndpointNetworkPolicies": "Disabled",
+                "privateLinkServiceNetworkPolicies": "Enabled"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2024-05-01",
+            "name": "[concat(parameters('vnetappName'), '/subnetfront-app-poc-fce-1')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetappName'))]"
+            ],
+            "properties": {
+                "addressPrefixes": [
+                    "10.0.1.0/24"
+                ],
+                "delegations": [],
+                "privateEndpointNetworkPolicies": "Disabled",
+                "privateLinkServiceNetworkPolicies": "Enabled"
+            }
+        },
+         {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2024-05-01",
+            "name": "[concat(parameters('vnetappName'), '/subnetadmin-app-poc-fce-1')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetappName'))]"
+            ],
+            "properties": {
+                "addressPrefixes": [
+                    "10.0.3.0/24"
+                ],
+                "delegations": [],
+                "privateEndpointNetworkPolicies": "Disabled",
+                "privateLinkServiceNetworkPolicies": "Enabled"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2024-05-01",
+            "name": "[parameters('nsgname')]",
+            "location": "france central",
+            "tags": {
+                "displayName": "Nsg-Frontend"
+            },
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "Allow-All-Outbound",
+                        "id": "[resourceId('Microsoft.Network/networkSecurityGroups/securityRules', parameters('nsgname'), 'Allow-All-Outbound')]",
+                        "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Outbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    }
+                ]
+            }
+        },
+          {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2024-05-01",
+            "name": "[parameters('nsgname1')]",
+            "location": "france central",
+            "tags": {
+                "displayName": "Nsg-Backend"
+            },
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "Allow-All-Outbound",
+                        "id": "[resourceId('Microsoft.Network/networkSecurityGroups/securityRules', parameters('nsgname1'), 'Allow-All-Outbound')]",
+                        "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Outbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "sqlServer1",
+            "type": "Microsoft.Sql/servers",
+            "apiVersion": "2021-11-01",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "sqlServer1"
+            },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetappName'),'subnetbackend-app-poc-fce-1')]"
+            ],
+            "properties": {
+                "administratorLogin": "azureuser",
+                "administratorLoginPassword": "4FE8yhU6iNiSlAwmKAa4"
+            },
+            "resources": [
+                {
+                    "type": "firewallRules",
+                    "apiVersion": "2021-11-01",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Sql/servers', 'sqlServer1')]"
+                    ],
+                    "location": "[resourceGroup().location]",
+                    "name": "AllowAllWindowsAzureIps",
+                    "properties": {
+                        "startIpAddress": "0.0.0.0",
+                        "endIpAddress": "0.0.0.0"
+                    }
+                }
+            ]
+        }
+
+ ]
+}

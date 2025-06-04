@@ -1,0 +1,86 @@
+
+/*
+-------------------------------------------------------------------------------------------------------------------------------
+Programme : Ajouts un vnet accessible en one-premise  qui sera à configurer selon le besoin 
+Type : JSON
+But : Ce programme permet de créer un vnet avec un subnet associer 
+Nom : 
+Version : 1.0
+Auteur : Taibou Judith
+Date : 20/03/2025
+
+prérequis :
+- Un abonnement Azure valide
+- Un groupe de ressources Azure valide
+- @ ip reseaux   "10.2.0.0/16"
+- elle contient un sous reseaux   "10.2.1.0/24"
+- Remplier les paramètres de configuration selon les besoins
+
+Attention : Ceci est une simulation de conectivité reseaux dans Azure uniquement
+          
+---------------------------------------------------------------------------------------------------------------------------------
+*/
+
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vnetopName": {
+            "defaultValue": "vnet-onpremise-poc-fce-1",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2024-05-01",
+            "name": "[parameters('vnetopName')]",
+            "location": "francecentral",
+            "tags": {
+                "displayName": "Vnet-OnPremise"
+            },
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "10.2.0.0/16"
+                    ]
+                },
+                "privateEndpointVNetPolicies": "Disabled",
+                "subnets": [
+                    {
+                        "name": "subnet-op-poc-fce-1",
+                        "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetopName'), 'subnet-op-poc-fce-1')]",
+                        "properties": {
+                            "addressPrefixes": [
+                                "10.2.1.0/24"
+                            ],
+                            "delegations": [],
+                            "privateEndpointNetworkPolicies": "Enabled",
+                            "privateLinkServiceNetworkPolicies": "Enabled"
+                        },
+                        "type": "Microsoft.Network/virtualNetworks/subnets"
+                    }
+                ],
+                "virtualNetworkPeerings": [],
+                "enableDdosProtection": false
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2024-05-01",
+            "name": "[concat(parameters('vnetopName'), '/subnet-op-poc-fce-1')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetopName'))]"
+            ],
+            "properties": {
+                "addressPrefixes": [
+                    "10.2.2.0/24"
+                ],
+                "delegations": [],
+                "privateEndpointNetworkPolicies": "Enabled",
+                "privateLinkServiceNetworkPolicies": "Enabled"
+            }
+        }
+    ]
+}

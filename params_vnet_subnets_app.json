@@ -1,0 +1,20 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vnetappName": {
+            "value": "vnet-applications-poc-fce-1",
+            "type": "String"
+        },
+       "nsgname": {
+            "value": "nsg_front",
+            "type": "String"
+        },
+         "nsgname1": {
+            "value": "nsg_back",
+            "type": "String"
+        }
+
+
+    }
+}
